@@ -1,0 +1,42 @@
+ABC SCHOOL DIGITAL CAMPUS — RELEASE NOTES
+
+WHAT THIS UPDATE ADDS
+- Parent/guardian result access using roll number + individual random access code.
+- Access codes are stored as password hashes, not plaintext.
+- Admin login with a maximum of two administrator accounts.
+- Admin dashboard, student search, profile editing, marks editing, pending marks, and original sheet-total audit display.
+- CSRF protection on forms and basic security headers.
+- No public admin sign-up route.
+
+IMPORTANT BEFORE PUBLIC DEPLOYMENT
+1. Do not upload real student CSV files, instance/abc_school.db, backups, .env, or exports to a public GitHub repository.
+2. Use a private source repository and a managed PostgreSQL database for a hosted deployment. Do not use Render's temporary filesystem for the production SQLite database.
+3. Keep SECRET_KEY private and set COOKIE_SECURE=true for HTTPS hosting.
+4. Do not publish parent names, DOB, or any student records in a public spreadsheet or public repository.
+5. Generate individual access codes from the admin edit screen and distribute each code privately to that student's parent/guardian. A code is shown only once. If lost, reset it and distribute the new code.
+6. Confirm school authorisation, guardian communication, data retention, and backup arrangements before making real students' results available online.
+7. The project is not deployed by this package. Deployment requires the school's own hosting account, private repository/database setup, and authorised configuration.
+
+ADMIN SETUP AFTER INSTALL
+Run from the project root:
+  .venv\Scripts\python.exe create_admin.py
+Create the first admin account. Run it a second time only if a second authorised admin is required. A third account is blocked.
+
+RUN LOCALLY
+  .venv\Scripts\python.exe app.py
+Open http://127.0.0.1:5000/
+Admin login: http://127.0.0.1:5000/admin/login
+
+The original sheet Total is retained as an audit value; editing subject marks does not silently overwrite it.
+
+
+RENDER DEPLOYMENT PREPARATION (NOT YET DEPLOYED)
+- Keep the code repository private. Render supports deploying from a connected private Git repository.
+- Set Build Command to: pip install -r requirements.txt
+- Set Start Command to: gunicorn --bind 0.0.0.0:$PORT app:app
+- Set a Health Check Path to: /health
+- Set SECRET_KEY to a long random secret using the hosting dashboard's secret/environment-variable controls. Never place it in code.
+- Set COOKIE_SECURE=true.
+- Provision a managed PostgreSQL database and configure DATABASE_URL with its connection string. Do not rely on an ephemeral SQLite file for a hosted production database.
+- Before moving actual student rows to the hosted database, have the authorised school administrator configure and verify a database backup/snapshot and a safe, private import procedure. The current CSV importer only auto-creates file backups for SQLite; it is not a production PostgreSQL backup solution.
+- Render's official Flask guide lists `pip install -r requirements.txt` as the build command and Gunicorn as the production start command. Its web-service guide requires binding to `0.0.0.0` and the service port.

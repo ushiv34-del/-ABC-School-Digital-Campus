@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin Login | ABC School</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></head>
+<body><header class="topbar"><a class="brand" href="/"><span class="brand-mark">ABC</span><span><b>A BRIGHT CHILDREN'S SCHOOL</b><small>LAHAR · DIGITAL CAMPUS</small></span></a><a class="top-link" href="/">Result portal</a></header>
+<main class="narrow-wrap"><section class="panel"><div class="section-kicker">RESTRICTED ACCESS</div><h1>Administrator login</h1><p class="muted">Only authorised school administrators may sign in.</p>
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+<form method="post" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Username<input name="username" required autocomplete="username" maxlength="80"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="button primary" type="submit">Sign in securely</button></form>
+<p class="privacy-note">Administrator accounts are created locally by the school using the setup command. There is no public sign-up page.</p></section></main></body></html>
