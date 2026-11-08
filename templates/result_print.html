@@ -1,7 +1,115 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Result Marksheet | ABC School</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"><style>@media print{body{background:#fff}.topbar,.footer,.no-print{display:none!important}.page-wrap{width:100%;margin:0}.panel{box-shadow:none;border:1px solid #bbb;break-inside:avoid}.print-title{display:block!important}}.print-title{display:none}</style></head>
-<body><header class="topbar"><div class="brand"><span class="brand-mark">ABC</span><span><b>A BRIGHT CHILDREN'S SCHOOL</b><small>LAHAR · DIGITAL CAMPUS</small></span></div><button class="button outline no-print" id="print-button" type="button">Print / Save PDF</button></header>
-<main class="page-wrap" style="margin-top:30px"><section class="panel"><div class="print-title"><h1>A Bright Children's School, Lahar</h1><p>Student Examination Marksheet · Academic Session {{ academic_year }}</p><hr></div><div class="result-heading"><div><div class="section-kicker">STUDENT RESULT</div><h2>{{ student.student_name }}</h2><p class="muted">Roll No. {{ student.roll_number }} · {{ student.class_name }}</p></div><span class="status {{ 'complete' if result.marks_complete else 'pending' }}">{{ result.result_status }}</span></div><div class="result-subtitle"><div><b>Middle Result</b><small>Academic year {{ academic_year }}</small></div></div>
-{% if result.marks_complete %}<div class="metric-grid"><div class="metric"><span>TOTAL MARKS</span><strong>{{ total_display }}<small> / {{ maximum }}</small></strong></div><div class="metric"><span>PERCENTAGE</span><strong>{{ percentage_display }}<small>%</small></strong></div></div>{% else %}<div class="alert warning">Result pending: final total and percentage will be available when all subject marks are entered.</div>{% endif %}
-<table class="marks-table"><thead><tr><th>Subject</th><th>Maximum</th><th>Marks obtained</th></tr></thead><tbody>{% for item in subject_rows %}<tr><td>{{ item.label }}</td><td>50</td><td>{% if item.mark is none %}<span class="pending-text">Pending</span>{% else %}<b>{{ item.mark }}</b>{% endif %}</td></tr>{% endfor %}</tbody></table><p class="privacy-note">This marksheet is generated from the school's result database. Contact the school office for corrections.</p></section></main>
-<footer class="footer"><b>A Bright Children's School, Lahar</b><span>ABC School Digital Campus · {{ academic_year }}</span></footer><script src="{{ url_for('static', filename='js/print.js') }}" defer></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Bright Children's School, Lahar | Result Marksheet</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    @media print {
+      body { background: #fff; }
+      .topbar, .footer, .no-print { display: none !important; }
+      .page-wrap { width: 100%; margin: 0; }
+      .panel { box-shadow: none; border: 1px solid #bbb; break-inside: avoid; }
+      .print-title { display: block !important; }
+    }
+    .print-title { display: block; text-align: center; margin-bottom: 18px; }
+    .print-title h1 { margin: 0 0 4px; font-size: 26px; color: #142746; }
+    .print-title p { margin: 0 0 12px; color: #475569; font-size: 13px; }
+    .print-title hr { border: 0; border-top: 2px solid #142746; margin: 12px 0 18px; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>PRINTABLE EXAMINATION MARKSHEET</small>
+    </span>
+  </a>
+  <div class="top-nav no-print">
+    <a class="top-link" href="{{ url_for('home') }}">← Back to Portal</a>
+    <button class="button outline" id="print-button" type="button">Print / Save PDF</button>
+  </div>
+</header>
+
+<main class="page-wrap" style="margin-top:30px">
+  <section class="panel">
+    <div class="print-title">
+      <h1>A Bright Children's School, Lahar</h1>
+      <p>Official Examination Marksheet · Academic Session {{ academic_year }}</p>
+      <hr>
+    </div>
+
+    <div class="result-heading">
+      <div>
+        <div class="section-kicker">STUDENT RESULT · {{ student.class_name|upper }}</div>
+        <h2>{{ student.student_name }}</h2>
+        <p class="muted">Roll No. <b>{{ student.roll_number }}</b> · Class: <b>{{ student.class_name }}</b></p>
+      </div>
+      <span class="status {{ 'complete' if result.marks_complete else 'pending' }}">{{ result.result_status }}</span>
+    </div>
+
+    <div class="result-subtitle">
+      <div>
+        <b>{{ exam_title }}</b>
+        <small>Academic year {{ academic_year }} · {{ subject_count }} subjects (50 marks each)</small>
+      </div>
+    </div>
+
+    {% if result.marks_complete %}
+    <div class="metric-grid">
+      <div class="metric">
+        <span>TOTAL MARKS</span>
+        <strong>{{ total_display }}<small> / {{ maximum }}</small></strong>
+      </div>
+      <div class="metric">
+        <span>PERCENTAGE</span>
+        <strong>{{ percentage_display }}<small>%</small></strong>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert warning">
+      Result pending: final total and percentage will be available when all subject marks are entered.
+    </div>
+    {% endif %}
+
+    <table class="marks-table">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Maximum Marks</th>
+          <th>Marks Obtained</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in subject_rows %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td>{{ item.max_marks }}</td>
+          <td>
+            {% if item.mark is none %}
+            <span class="pending-text">Pending</span>
+            {% else %}
+            <b>{{ item.mark }}</b>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p class="privacy-note">
+      This marksheet is generated from the official result database of A Bright Children's School, Lahar. Contact the school office for any corrections.
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Academic Session {{ academic_year }}</span>
+</footer>
+<script src="{{ url_for('static', filename='js/print.js') }}" defer></script>
+</body>
+</html>

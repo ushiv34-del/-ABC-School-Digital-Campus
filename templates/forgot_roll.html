@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forgot Roll Number | A Bright Children's School, Lahar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>FORGOT ROLL NUMBER ASSISTANCE</small>
+    </span>
+  </a>
+  <nav class="top-nav">
+    <a class="top-link" href="{{ url_for('home') }}">← Back to Result Portal</a>
+    <a class="top-link admin-pill" href="{{ url_for('admin_login') }}">School Admin</a>
+  </nav>
+</header>
+
+<section class="hero compact-hero">
+  <div class="eyebrow">PARENT &amp; STUDENT HELP DESK</div>
+  <h1>A Bright Children's School, Lahar</h1>
+  <p>Forgot Roll Number — Simple &amp; Safe Parent Assistance</p>
+</section>
+
+<main class="page-wrap">
+  <div class="tab-bar">
+    <a class="tab-btn {{ 'active' if active_tab != 'status' else '' }}" href="{{ url_for('forgot_roll_number', tab='request') }}">1. Request Roll Number (नया फॉर्म भरें)</a>
+    <a class="tab-btn {{ 'active' if active_tab == 'status' else '' }}" href="{{ url_for('forgot_roll_number', tab='status') }}">2. Check Request Status (अपना रोल नंबर देखें)</a>
+  </div>
+
+  {% if submitted_request %}
+  <section class="panel">
+    <div class="alert success">
+      <b>Your Roll Number Request Has Been Sent! (आपका अनुरोध स्कूल एडमिन को भेज दिया गया है)</b>
+    </div>
+    <div style="margin-top:16px;">
+      <p class="muted">Please note down your Reference Code below. Once the school administrator verifies your child's record, you can check your roll number on this page using this Reference Code and your mobile number:</p>
+      <div class="ref-box">
+        <span>REFERENCE CODE</span>
+        <strong>{{ submitted_request.reference_code }}</strong>
+        <small>Student: {{ submitted_request.student_name }} ({{ submitted_request.class_name }}) · Mobile: {{ submitted_request.parent_mobile }}</small>
+      </div>
+      <p class="print-actions">
+        <a class="button primary" href="{{ url_for('forgot_roll_number', tab='status') }}">Check Request Status →</a>
+        <a class="button outline dark-outline" href="{{ url_for('home') }}">Return to Result Portal</a>
+      </p>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if active_tab == 'status' %}
+  <section class="panel">
+    <div class="section-kicker">CHECK YOUR APPROVED ROLL NUMBER</div>
+    <h2>Check Request Status</h2>
+    <p class="muted">Enter the Reference Code (e.g. <b>REQ-123456</b>) and the Parent Mobile Number you used when submitting the request.</p>
+
+    {% if status_error %}
+    <div class="alert error">{{ status_error }}</div>
+    {% endif %}
+
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="check_status">
+      <div class="form-grid">
+        <label>
+          Reference Code (रेफरेंस कोड)
+          <input name="reference_code" required maxlength="20" placeholder="e.g. REQ-482910" value="{{ request.form.get('reference_code', '') }}">
+        </label>
+        <label>
+          Parent Mobile Number (मोबाइल नंबर)
+          <input name="parent_mobile" inputmode="numeric" required maxlength="15" placeholder="10-digit mobile number" value="{{ request.form.get('parent_mobile', '') }}">
+        </label>
+      </div>
+      <button class="button primary" type="submit">Check Status →</button>
+    </form>
+
+    {% if status_lookup_result %}
+    <div class="status-result-box" style="margin-top:22px;">
+      {% if status_lookup_result.status == 'APPROVED' %}
+      <div class="alert success">
+        <b>Verified by School Administrator!</b><br>
+        Student Name: <b>{{ status_lookup_result.student_name }}</b> ({{ status_lookup_result.class_name }})<br>
+        Official Roll Number: <b style="font-size:18px;">{{ status_lookup_result.resolved_roll_number }}</b>
+        {% if status_lookup_result.admin_note %}<br>School Note: {{ status_lookup_result.admin_note }}{% endif %}
+      </div>
+      <p class="print-actions">
+        <a class="button primary" href="{{ url_for('home', roll=status_lookup_result.resolved_roll_number) }}">View Result with Roll No. {{ status_lookup_result.resolved_roll_number }} →</a>
+      </p>
+      {% elif status_lookup_result.status == 'REJECTED' %}
+      <div class="alert error">
+        <b>Request Could Not Be Verified:</b><br>
+        {{ status_lookup_result.admin_note or 'Please contact the school office directly with your child details.' }}
+      </div>
+      {% else %}
+      <div class="alert warning">
+        <b>Status: Pending School Admin Verification</b><br>
+        Your request (<b>{{ status_lookup_result.reference_code }}</b>) for <b>{{ status_lookup_result.student_name }}</b> ({{ status_lookup_result.class_name }}) is waiting for approval by the school administrator. Please check again shortly or contact the school office.
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  {% else %}
+  <section class="panel">
+    <div class="section-kicker">STEP-BY-STEP PARENT HELP</div>
+    <h2>Request Forgotten Roll Number</h2>
+    <p class="muted">
+      For student privacy, roll numbers and student lists are never displayed publicly. Fill out this simple form with your child's name, class, and at least one verifiable detail (Father's Name, Mother's Name, or Date of Birth). An authorised school administrator will verify the record and provide the roll number.
+    </p>
+
+    {% if form_error %}
+    <div class="alert error">{{ form_error }}</div>
+    {% endif %}
+
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="submit_request">
+      <div class="form-grid">
+        <label>
+          Student's Full Name (विद्यार्थी का नाम) *
+          <input name="student_name" required maxlength="120" placeholder="Enter student's name" value="{{ request.form.get('student_name', '') }}">
+        </label>
+        <label>
+          Class (कक्षा चुनें) *
+          <select name="class_name" required>
+            <option value="">-- Select Class --</option>
+            {% for cls in all_classes %}
+            <option value="{{ cls }}" {{ 'selected' if request.form.get('class_name') == cls else '' }}>{{ cls }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Father's Name (पिता का नाम)
+          <input name="father_name" maxlength="120" placeholder="Enter father's name" value="{{ request.form.get('father_name', '') }}">
+        </label>
+        <label>
+          Mother's Name (माता का नाम)
+          <input name="mother_name" maxlength="120" placeholder="Enter mother's name" value="{{ request.form.get('mother_name', '') }}">
+        </label>
+        <label>
+          Date of Birth (जन्म तिथि - यदि पता हो)
+          <input type="date" name="dob" value="{{ request.form.get('dob', '') }}">
+        </label>
+        <label>
+          Parent / Guardian Mobile Number (मोबाइल नंबर) *
+          <input name="parent_mobile" inputmode="numeric" required maxlength="15" placeholder="10-digit mobile number" value="{{ request.form.get('parent_mobile', '') }}">
+        </label>
+      </div>
+      <button class="button primary" type="submit">Submit Request to School Admin →</button>
+    </form>
+    <p class="privacy-note">
+      Privacy Guarantee: Your submitted details are visible only to authorised administrators of A Bright Children's School, Lahar.
+    </p>
+  </section>
+  {% endif %}
+</main>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Academic Session {{ academic_year }}</span>
+</footer>
+</body>
+</html>

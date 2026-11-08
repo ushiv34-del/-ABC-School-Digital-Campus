@@ -1,37 +1,142 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Student Result Portal | ABC School</title>
+  <title>A Bright Children's School, Lahar | Student Result Portal</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<header class="topbar"><a class="brand" href="/"><span class="brand-mark">ABC</span><span><b>A BRIGHT CHILDREN'S SCHOOL</b><small>LAHAR · DIGITAL CAMPUS</small></span></a><a class="top-link" href="{{ url_for('admin_login') }}">School Admin</a></header>
-<section class="hero"><div class="eyebrow">ACADEMIC SESSION {{ academic_year }}</div><h1>Student Result Portal</h1><p>Welcome to A Bright Children's School, Lahar</p></section>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>ABC SCHOOL DIGITAL CAMPUS · NURSERY TO CLASS 8</small>
+    </span>
+  </a>
+  <nav class="top-nav">
+    <a class="top-link" href="{{ url_for('forgot_roll_number') }}">Forgot Roll Number?</a>
+    <a class="top-link admin-pill" href="{{ url_for('admin_login') }}">School Admin</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">ACADEMIC SESSION {{ academic_year }} · NURSERY TO CLASS 8</div>
+  <h1>A Bright Children's School, Lahar</h1>
+  <p>Official Online Examination Result &amp; Student Marksheet Portal</p>
+</section>
+
 <main class="page-wrap">
-  <section class="panel search-panel"><div><div class="section-kicker">STUDENT & PARENT ACCESS</div><h2>View examination result</h2><p class="muted">Enter the student's school roll number below. The same number is used as the result access number.</p></div>
-    <form method="post" class="search-form">
+  <section class="panel search-panel">
+    <div>
+      <div class="section-kicker">STUDENT &amp; PARENT RESULT PORTAL</div>
+      <h2>Check Examination Result</h2>
+      <p class="muted">
+        Enter the student's roll number below (for example: <b>N01</b> for Nursery, <b>L01</b> for LKG, <b>U01</b> for UKG, or <b>101–841</b> for Classes 1 to 8).
+      </p>
+    </div>
+
+    <form method="post" class="search-form single-search-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label>Student roll number<input name="roll_number" inputmode="numeric" maxlength="20" required value="{{ roll_number }}" placeholder="Enter roll number"></label>
-      <button class="button primary" type="submit">View result <span aria-hidden="true">→</span></button>
+      <label>
+        Student Roll Number
+        <input name="roll_number" maxlength="20" required value="{{ roll_number }}" placeholder="e.g. N01, L01, U01, 101, 601">
+      </label>
+      <button class="button primary" type="submit">View Result <span aria-hidden="true">→</span></button>
     </form>
-    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
-    <p class="privacy-note">Please keep the roll number available. Because the roll number is the only access check, anyone who knows it may be able to view this result.</p>
+
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <div class="helper-strip">
+      <span>Don't remember the student's roll number?</span>
+      <a class="text-link" href="{{ url_for('forgot_roll_number') }}">Click here for Forgot Roll Number assistance →</a>
+    </div>
   </section>
 
   {% if student and result %}
   <section class="panel result-panel">
-    <div class="result-heading"><div><div class="section-kicker">STUDENT RESULT</div><h2>{{ student.student_name }}</h2><p class="muted">Roll No. {{ student.roll_number }} <span class="dot">·</span> {{ student.class_name }}</p></div><span class="status {{ 'complete' if result.marks_complete else 'pending' }}">{{ result.result_status }}</span></div>
-    <div class="result-subtitle"><div><b>Middle Result</b><small>Academic year {{ academic_year }}</small></div><span class="muted">8 subjects · 50 marks each</span></div>
+    <div class="result-heading">
+      <div>
+        <div class="section-kicker">OFFICIAL STUDENT MARKSHEET · {{ student.class_name|upper }}</div>
+        <h2>{{ student.student_name }}</h2>
+        <p class="muted">
+          Roll No. <b>{{ student.roll_number }}</b>
+          <span class="dot">·</span> Class: <b>{{ student.class_name }}</b>
+        </p>
+      </div>
+      <span class="status {{ 'complete' if result.marks_complete else 'pending' }}">{{ result.result_status }}</span>
+    </div>
+
+    <div class="result-subtitle">
+      <div>
+        <b>{{ exam_title }}</b>
+        <small>A Bright Children's School, Lahar · Academic Session {{ academic_year }}</small>
+      </div>
+      <span class="muted">{{ subject_count }} subjects · 50 marks each (Max {{ maximum }})</span>
+    </div>
+
     {% if result.marks_complete %}
-    <div class="metric-grid"><div class="metric"><span>TOTAL MARKS</span><strong>{{ total_display }}<small> / {{ maximum }}</small></strong></div><div class="metric"><span>PERCENTAGE</span><strong>{{ percentage_display }}<small>%</small></strong></div></div>
-    {% else %}<div class="alert warning">Your result is partially pending. {{ pending_count }} subject(s) do not have marks entered yet. The final total and percentage will appear once all marks are available.</div>{% endif %}
-    <div class="table-wrap"><table class="marks-table"><thead><tr><th>Subject</th><th>Maximum marks</th><th>Marks obtained</th></tr></thead><tbody>{% for item in subject_rows %}<tr><td>{{ item.label }}</td><td>50</td><td>{% if item.mark is none %}<span class="pending-text">Pending</span>{% else %}<b>{{ item.mark }}</b>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
-    <p class="print-actions"><a class="button outline dark-outline" href="{{ url_for('print_result') }}" target="_blank" rel="noopener">Open printable marksheet</a></p>
-    <p class="privacy-note">This result is provided for the parent/guardian's reference. Contact the school office for any correction or clarification.</p>
+    <div class="metric-grid">
+      <div class="metric">
+        <span>TOTAL MARKS OBTAINED</span>
+        <strong>{{ total_display }}<small> / {{ maximum }}</small></strong>
+      </div>
+      <div class="metric">
+        <span>PERCENTAGE</span>
+        <strong>{{ percentage_display }}<small>%</small></strong>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert warning">
+      <b>Result Partially Pending:</b> {{ pending_count }} subject(s) ({{ result.pending_subjects|join(', ') }}) do not have marks entered yet. The final total and percentage will appear automatically once all subject marks are updated by the school office.
+    </div>
+    {% endif %}
+
+    <div class="table-wrap">
+      <table class="marks-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Maximum Marks</th>
+            <th>Marks Obtained</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in subject_rows %}
+          <tr>
+            <td>{{ item.label }}</td>
+            <td>{{ item.max_marks }}</td>
+            <td>
+              {% if item.mark is none %}
+              <span class="pending-text">Pending</span>
+              {% else %}
+              <b>{{ item.mark }}</b>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-actions">
+      <a class="button primary" href="{{ url_for('print_result') }}" target="_blank" rel="noopener">Print / Download Marksheet PDF</a>
+    </div>
+    <p class="privacy-note">
+      This online result is issued by A Bright Children's School, Lahar for parent and student reference. Please contact the school office for any queries.
+    </p>
   </section>
   {% endif %}
 </main>
-<footer class="footer"><b>A Bright Children's School, Lahar</b><span>ABC School Digital Campus · Academic Session {{ academic_year }}</span><span>For assistance, contact the school office.</span></footer>
-</body></html>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Nursery to Class 8 · Academic Session {{ academic_year }}</span>
+  <span><a href="{{ url_for('forgot_roll_number') }}" style="text-decoration:underline;color:#dce8f7;">Forgot Roll Number</a> · For assistance, contact the school office.</span>
+</footer>
+</body>
+</html>

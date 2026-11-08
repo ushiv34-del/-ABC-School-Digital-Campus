@@ -1,6 +1,100 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin Dashboard | ABC School</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></head>
-<body><header class="topbar"><a class="brand" href="{{ url_for('admin_dashboard') }}"><span class="brand-mark">ABC</span><span><b>ABC SCHOOL ADMIN</b><small>LAHAR · DIGITAL CAMPUS</small></span></a><form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button outline" type="submit">Sign out</button></form></header>
-<main class="page-wrap admin-wrap"><div class="welcome-row"><div><div class="section-kicker">ADMINISTRATION</div><h1>Dashboard</h1><p class="muted">Signed in as {{ admin.username }} · Academic year {{ '2026-27' }}</p></div><a class="button primary" href="{{ url_for('admin_students') }}">Manage students →</a></div>
-<div class="stat-grid"><article class="stat-card"><span>ACTIVE STUDENTS</span><strong>{{ total_students }}</strong></article><article class="stat-card"><span>CLASS 6</span><strong>{{ class_counts['Class 6'] }}</strong></article><article class="stat-card"><span>CLASS 7</span><strong>{{ class_counts['Class 7'] }}</strong></article><article class="stat-card"><span>CLASS 8</span><strong>{{ class_counts['Class 8'] }}</strong></article><article class="stat-card"><span>PENDING RESULTS</span><strong>{{ pending_count }}</strong></article><article class="stat-card"><span>TOTAL MISMATCHES</span><strong>{{ mismatch_count }}</strong></article></div>
-<section class="panel"><h2>Important reminders</h2><ul class="reminder-list"><li>Parents can enter the student's roll number to view the result. Treat result access as public to anyone who knows the roll number.</li><li>Student edits do not overwrite the original Google Sheet Total.</li><li>Keep regular database backups. Never commit the database, CSV, backup files, or .env to a public repository.</li></ul><a class="text-link" href="{{ url_for('admin_students') }}">Open student management →</a></section></main></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | A Bright Children's School, Lahar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('admin_dashboard') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>ADMINISTRATION · DIGITAL CAMPUS</small>
+    </span>
+  </a>
+  <div class="top-nav">
+    <a class="top-link" href="{{ url_for('admin_students') }}">Students</a>
+    <a class="top-link" href="{{ url_for('admin_recovery_requests') }}">
+      Roll Requests {% if pending_recovery_count > 0 %}<span class="badge-pill">{{ pending_recovery_count }}</span>{% endif %}
+    </a>
+    <a class="top-link" href="{{ url_for('admin_manage_admins') }}">Admins ({{ admin_count }}/5)</a>
+    <a class="top-link" href="{{ url_for('home') }}" target="_blank">Public Portal ↗</a>
+    <form method="post" action="{{ url_for('admin_logout') }}" style="display:inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button outline" type="submit">Sign out</button>
+    </form>
+  </div>
+</header>
+
+<main class="page-wrap admin-wrap">
+  <div class="welcome-row">
+    <div>
+      <div class="section-kicker">A BRIGHT CHILDREN'S SCHOOL, LAHAR · ADMINISTRATION</div>
+      <h1>School Dashboard</h1>
+      <p class="muted">Signed in as <b>{{ admin.username }}</b> · Academic Session {{ academic_year }} · Nursery to Class 8</p>
+    </div>
+    <div class="action-group">
+      <a class="button primary" href="{{ url_for('admin_students') }}">Manage Students →</a>
+      <a class="button outline dark-outline" href="{{ url_for('admin_recovery_requests') }}">
+        Forgot Roll Requests ({{ pending_recovery_count }} Pending)
+      </a>
+      <a class="button outline dark-outline" href="{{ url_for('admin_manage_admins') }}">
+        Manage Admins ({{ active_admin_count }} Active / {{ admin_count }} Total)
+      </a>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <article class="stat-card highlight-card">
+      <span>TOTAL ACTIVE STUDENTS (NURSERY–8)</span>
+      <strong>{{ total_students }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>PENDING SUBJECT RESULTS</span>
+      <strong>{{ pending_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>ORIGINAL SHEET TOTAL MISMATCHES</span>
+      <strong>{{ mismatch_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>PENDING ROLL RECOVERY REQUESTS</span>
+      <strong>{{ pending_recovery_count }}</strong>
+    </article>
+  </div>
+
+  <section class="panel">
+    <div class="section-kicker">CLASS-WISE ENROLMENT &amp; QUICK ACCESS</div>
+    <h2>Students by Class (Nursery to Class 8)</h2>
+    <p class="muted">Click any class card below to filter and manage students of that class.</p>
+    <div class="class-grid">
+      {% for cls in all_classes %}
+      <a class="class-card" href="{{ url_for('admin_students', class_name=cls) }}">
+        <span>{{ cls|upper }}</span>
+        <strong>{{ class_counts.get(cls, 0) }}</strong>
+        <small>View students →</small>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Important Administration Reminders</h2>
+    <ul class="reminder-list">
+      <li><b>Class-Specific Subjects:</b> Nursery–UKG use 3 subjects (Max 150), Classes 1–5 use 6 subjects (Max 300), and Classes 6–8 use 8 subjects (Max 400).</li>
+      <li><b>Audit Preservation:</b> Editing subject marks updates the live calculated total and percentage without overwriting the original imported sheet Total.</li>
+      <li><b>Forgot Roll Number Requests:</b> Parents can submit a verification form without exposing student lists publicly. Review and approve requests under <a class="text-link" href="{{ url_for('admin_recovery_requests') }}">Forgot Roll Requests</a>.</li>
+      <li><b>Multi-Admin Control:</b> Up to 5 individual administrator accounts are supported under <a class="text-link" href="{{ url_for('admin_manage_admins') }}">Manage Admins</a>. The last active admin account is protected from accidental deactivation.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Academic Session {{ academic_year }}</span>
+</footer>
+</body>
+</html>

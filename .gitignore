@@ -29,3 +29,4 @@ Thumbs.db
 
 # Private school data and local environment
 *.csv
+data_imports/

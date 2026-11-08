@@ -1,7 +1,58 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin Login | ABC School</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></head>
-<body><header class="topbar"><a class="brand" href="/"><span class="brand-mark">ABC</span><span><b>A BRIGHT CHILDREN'S SCHOOL</b><small>LAHAR · DIGITAL CAMPUS</small></span></a><a class="top-link" href="/">Result portal</a></header>
-<main class="narrow-wrap"><section class="panel"><div class="section-kicker">RESTRICTED ACCESS</div><h1>Administrator login</h1><p class="muted">Only authorised school administrators may sign in.</p>
-{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
-<form method="post" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Username<input name="username" required autocomplete="username" maxlength="80"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="button primary" type="submit">Sign in securely</button></form>
-<p class="privacy-note">Administrator accounts are created locally by the school using the setup command. There is no public sign-up page.</p></section></main></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login | A Bright Children's School, Lahar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>ABC SCHOOL DIGITAL CAMPUS · ADMIN PORTAL</small>
+    </span>
+  </a>
+  <div class="top-nav">
+    <a class="top-link" href="{{ url_for('home') }}">Result Portal</a>
+  </div>
+</header>
+
+<main class="narrow-wrap">
+  <section class="panel">
+    <div class="section-kicker">RESTRICTED SCHOOL ACCESS</div>
+    <h1>A Bright Children's School, Lahar</h1>
+    <h2 style="font-size:18px;color:#334155;margin-bottom:8px;">Administrator Login</h2>
+    <p class="muted">Only authorised school administrators (up to 5 accounts) may sign in.</p>
+
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>
+        Username
+        <input name="username" required autocomplete="username" maxlength="80">
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button class="button primary" type="submit">Sign In Securely</button>
+    </form>
+
+    <p class="privacy-note">
+      Administrator accounts are managed by the school administration (maximum 5 accounts). There is no public registration page.
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Academic Session {{ academic_year }}</span>
+</footer>
+</body>
+</html>

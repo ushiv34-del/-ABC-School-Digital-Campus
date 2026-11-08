@@ -1,1 +1,33 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ABC School Portal</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"></head><body><header class="topbar"><a class="brand" href="/"><span class="brand-mark">ABC</span><span><b>ABC SCHOOL</b><small>DIGITAL CAMPUS · LAHAR</small></span></a></header><main class="narrow-wrap"><section class="panel"><h1>Page unavailable</h1><p class="muted">{{ message }}</p><a class="button primary" href="/">Return to portal</a></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Bright Children's School, Lahar | Digital Campus</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>ABC SCHOOL DIGITAL CAMPUS</small>
+    </span>
+  </a>
+</header>
+<main class="narrow-wrap">
+  <section class="panel">
+    <h1>Page Unavailable</h1>
+    <p class="muted">{{ message }}</p>
+    <p class="print-actions">
+      <a class="button primary" href="{{ url_for('home') }}">Return to Result Portal</a>
+    </p>
+  </section>
+</main>
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus</span>
+</footer>
+</body>
+</html>

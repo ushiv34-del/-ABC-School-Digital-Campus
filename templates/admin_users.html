@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Administrators | A Bright Children's School, Lahar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('admin_dashboard') }}">
+    <span class="brand-mark">ABC</span>
+    <span>
+      <b>A Bright Children's School, Lahar</b>
+      <small>ADMINISTRATOR ACCOUNTS (MAX {{ max_admins }})</small>
+    </span>
+  </a>
+  <div class="top-nav">
+    <a class="top-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a class="top-link" href="{{ url_for('admin_students') }}">Students</a>
+    <a class="top-link" href="{{ url_for('admin_recovery_requests') }}">Roll Requests</a>
+  </div>
+</header>
+
+<main class="page-wrap admin-wrap">
+  <div class="welcome-row">
+    <div>
+      <div class="section-kicker">SECURITY &amp; ACCESS CONTROL</div>
+      <h1>Administrator Management</h1>
+      <p class="muted">
+        Up to <b>{{ max_admins }}</b> separate administrator accounts are supported. Currently using <b>{{ admins|length }} / {{ max_admins }}</b> accounts (<b>{{ active_count }}</b> active).
+      </p>
+    </div>
+    <a class="button outline dark-outline" href="{{ url_for('admin_dashboard') }}">← Dashboard</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert {{ 'success' if category == 'success' else 'warning' if category == 'warning' else 'info' }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% if errors %}
+  <div class="alert error">
+    <b>Action could not be completed:</b>
+    <ul>
+      {% for err in errors %}
+      <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <section class="panel">
+    <h2>Existing Administrator Accounts ({{ admins|length }} / {{ max_admins }})</h2>
+    <p class="muted">For security, existing administrator accounts cannot be deleted and the last active administrator cannot be deactivated.</p>
+    <div class="table-wrap">
+      <table class="marks-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in admins %}
+          <tr>
+            <td>#{{ item.id }}</td>
+            <td>
+              <b>{{ item.username }}</b>
+              {% if item.id == admin.id %}<span class="muted"> (You)</span>{% endif %}
+            </td>
+            <td>
+              {% if item.active %}
+              <span class="status complete">ACTIVE</span>
+              {% else %}
+              <span class="status pending">INACTIVE</span>
+              {% endif %}
+            </td>
+            <td>{{ item.created_at.strftime('%d-%m-%Y') if item.created_at else '—' }}</td>
+            <td>
+              {% if item.active and (active_count <= 1 or item.id == admin.id) %}
+              <span class="muted">Protected (Signed in / Last active)</span>
+              {% else %}
+              <form method="post" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="toggle_active">
+                <input type="hidden" name="target_admin_id" value="{{ item.id }}">
+                <button class="button outline dark-outline" type="submit" style="min-height:34px;padding:6px 12px;">
+                  {{ 'Set Inactive' if item.active else 'Activate Account' }}
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Create Additional Administrator Account</h2>
+    {% if admins|length >= max_admins %}
+    <div class="alert warning">
+      <b>Maximum Limit Reached ({{ max_admins }} / {{ max_admins }}):</b> All {{ max_admins }} administrator slots are currently created.
+    </div>
+    {% else %}
+    <p class="muted">Each administrator has a unique username and a password hashed securely (minimum 12 characters).</p>
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="create">
+      <div class="form-grid">
+        <label>
+          New Admin Username
+          <input name="username" required maxlength="80" autocomplete="off" placeholder="e.g. principal_lahar">
+        </label>
+        <label>
+          Password (minimum 12 characters)
+          <input type="password" name="password" required minlength="12" autocomplete="new-password" placeholder="At least 12 characters">
+        </label>
+        <label>
+          Confirm Password
+          <input type="password" name="confirm_password" required minlength="12" autocomplete="new-password" placeholder="Re-enter password">
+        </label>
+      </div>
+      <button class="button primary" type="submit">Create Administrator Account ({{ admins|length + 1 }} of {{ max_admins }})</button>
+    </form>
+    {% endif %}
+  </section>
+</main>
+
+<footer class="footer">
+  <b>A Bright Children's School, Lahar</b>
+  <span>ABC School Digital Campus · Academic Session {{ academic_year }}</span>
+</footer>
+</body>
+</html>
